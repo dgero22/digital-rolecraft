@@ -124,15 +124,15 @@ const Simulator = () => {
                 </Select>
                 
                 <Select 
-                  value={selectedConversationId || ''} 
+                  value={selectedConversationId || 'new'} 
                   onValueChange={handleConversationChange}
                   disabled={personaConversations.length === 0}
                 >
                   <SelectTrigger className="w-full sm:w-[200px]">
-                    <SelectValue placeholder="New conversation" />
+                    <SelectValue placeholder="Select conversation" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">New conversation</SelectItem>
+                    <SelectItem value="new">New conversation</SelectItem>
                     {personaConversations.map(conversation => (
                       <SelectItem key={conversation.id} value={conversation.id}>
                         {new Date(conversation.createdAt).toLocaleDateString()}
