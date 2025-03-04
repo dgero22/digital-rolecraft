@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -22,10 +21,11 @@ import {
   Twitter, 
   Linkedin, 
   Instagram, 
-  GitHub, 
+  Github, 
   Plus, 
   X, 
-  Save
+  Save,
+  Users
 } from "lucide-react";
 import type { Persona, DataSource, PersonaTraits } from '@/types';
 import { toast } from 'sonner';
@@ -255,7 +255,6 @@ const CreatePersonaForm = ({ initialData, onSave }: CreatePersonaFormProps) => {
   };
   
   const handleSave = () => {
-    // Validate form data
     if (!formData.name) {
       toast.error('Please enter a name for your persona');
       return;
@@ -269,7 +268,6 @@ const CreatePersonaForm = ({ initialData, onSave }: CreatePersonaFormProps) => {
     if (onSave) {
       onSave(finalPersona);
     } else {
-      // Save to local storage
       const existingPersonas = JSON.parse(localStorage.getItem('personas') || '[]');
       const updatedPersonas = initialData 
         ? existingPersonas.map((p: Persona) => p.id === finalPersona.id ? finalPersona : p)
@@ -287,7 +285,7 @@ const CreatePersonaForm = ({ initialData, onSave }: CreatePersonaFormProps) => {
     { name: 'Twitter', icon: <Twitter className="h-4 w-4" /> },
     { name: 'LinkedIn', icon: <Linkedin className="h-4 w-4" /> },
     { name: 'Instagram', icon: <Instagram className="h-4 w-4" /> },
-    { name: 'GitHub', icon: <GitHub className="h-4 w-4" /> },
+    { name: 'GitHub', icon: <Github className="h-4 w-4" /> },
   ];
 
   return (
