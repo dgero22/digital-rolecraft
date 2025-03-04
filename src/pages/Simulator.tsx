@@ -72,8 +72,14 @@ const Simulator = () => {
   };
   
   const handleConversationChange = (conversationId: string) => {
-    setSelectedConversationId(conversationId);
-    navigate(`/simulator?personaId=${selectedPersonaId}&conversationId=${conversationId}`);
+    // If "new" is selected, set selectedConversationId to null to start a new conversation
+    if (conversationId === 'new') {
+      setSelectedConversationId(null);
+      navigate(`/simulator?personaId=${selectedPersonaId}`);
+    } else {
+      setSelectedConversationId(conversationId);
+      navigate(`/simulator?personaId=${selectedPersonaId}&conversationId=${conversationId}`);
+    }
   };
 
   return (
@@ -101,7 +107,7 @@ const Simulator = () => {
                   <h1 className="text-2xl md:text-3xl font-semibold">Conversation Simulator</h1>
                 </div>
                 <p className="text-muted-foreground mt-1 md:ml-10">
-                  Simulate conversations with your digital personas
+                  Simulate conversations with your digital personas using Gemini AI
                 </p>
               </div>
               
@@ -126,7 +132,7 @@ const Simulator = () => {
                 <Select 
                   value={selectedConversationId || 'new'} 
                   onValueChange={handleConversationChange}
-                  disabled={personaConversations.length === 0}
+                  disabled={!selectedPersonaId}
                 >
                   <SelectTrigger className="w-full sm:w-[200px]">
                     <SelectValue placeholder="Select conversation" />

@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send, RefreshCw, Settings, Save, AlertTriangle } from "lucide-react";
+import { Send, RefreshCw, Settings, Save, AlertTriangle, Key } from "lucide-react";
 import { nanoid } from 'nanoid';
 import type { Persona, Message, Conversation } from '@/types';
 import { toast } from 'sonner';
+import { generateGeminiResponse } from '@/utils/geminiApi';
 
 interface SimulatorChatProps {
   persona: Persona;
@@ -25,6 +26,9 @@ const SimulatorChat = ({ persona, initialConversation }: SimulatorChatProps) => 
   const [conversationName, setConversationName] = useState(
     initialConversation?.id || `Conversation with ${persona.name}`
   );
+  const [apiKey, setApiKey] = useState(() => {
+    return localStorage.getItem('gemini_api_key') || '';
+  });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -33,6 +37,12 @@ const SimulatorChat = ({ persona, initialConversation }: SimulatorChatProps) => 
     scrollToBottom();
   }, [messages]);
   
+  useEffect(() => {
+    if (apiKey) {
+      localStorage.setItem('gemini_api_key', apiKey);
+    }
+  }, [apiKey]);
+  
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -40,35 +50,57 @@ const SimulatorChat = ({ persona, initialConversation }: SimulatorChatProps) => 
   const simulatePersonaResponse = async (userMessage: string) => {
     setIsGenerating(true);
     
-    // This would be replaced with a real API call in a production app
-    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    if (!apiKey) {
+      toast.error("Please enter your Gemini API key in the settings.");
+      setIsGenerating(false);
+      setShowSettings(true);
+      return;
+    }
     
-    // Simulate typing indicator for 1-3 seconds
-    await delay(Math.random() * 2000 + 1000);
+    // Convert messages to the format expected by the Gemini API
+    const messageHistory = messages.map(msg => ({
+      role: msg.sender === 'user' ? 'user' : 'model' as 'user' | 'model',
+      content: msg.content
+    }));
     
-    // Generate a response based on persona's traits
-    const traits = persona.traits;
-    const responses = [
-      `Based on my ${traits.personality[0] || 'analytical'} nature, I think this is an interesting point.`,
-      `As someone who values ${traits.values[0] || 'integrity'}, I'd approach this differently.`,
-      `My experience with ${traits.interests[0] || 'technology'} gives me a unique perspective on this.`,
-      `I tend to ${traits.behaviors[0] || 'collaborate'} in situations like this.`,
-      `One of my strengths is ${traits.strengths[0] || 'problem-solving'}, which helps me see that...`,
-      `Despite my ${traits.weaknesses[0] || 'impatience'}, I'd take time to consider all angles here.`
-    ];
+    // Create a persona description for the API
+    const personaDescription = `${persona.name}: ${persona.tagline}. 
+      Background: ${persona.background}. 
+      Personality: ${persona.traits.personality.join(', ')}. 
+      Values: ${persona.traits.values.join(', ')}. 
+      Communication style: ${persona.traits.communication}. 
+      Interests: ${persona.traits.interests.join(', ')}. 
+      Behaviors: ${persona.traits.behaviors.join(', ')}. 
+      Strengths: ${persona.traits.strengths.join(', ')}. 
+      Weaknesses: ${persona.traits.weaknesses.join(', ')}.`;
     
-    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-    
-    const newMessage: Message = {
-      id: nanoid(),
-      content: randomResponse,
-      sender: 'persona',
-      personaId: persona.id,
-      timestamp: new Date().toISOString()
-    };
-    
-    setMessages([...messages, newMessage]);
-    setIsGenerating(false);
+    try {
+      const response = await generateGeminiResponse(
+        apiKey,
+        userMessage,
+        personaDescription,
+        messageHistory
+      );
+      
+      if (response.error) {
+        toast.error(`API Error: ${response.error}`);
+      }
+      
+      const newMessage: Message = {
+        id: nanoid(),
+        content: response.text,
+        sender: 'persona',
+        personaId: persona.id,
+        timestamp: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, newMessage]);
+    } catch (error) {
+      console.error("Error generating response:", error);
+      toast.error("Failed to generate a response. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
   
   const handleSendMessage = () => {
@@ -81,7 +113,7 @@ const SimulatorChat = ({ persona, initialConversation }: SimulatorChatProps) => 
       timestamp: new Date().toISOString()
     };
     
-    setMessages([...messages, newMessage]);
+    setMessages(prev => [...prev, newMessage]);
     setInputValue('');
     
     simulatePersonaResponse(inputValue);
@@ -200,9 +232,35 @@ const SimulatorChat = ({ persona, initialConversation }: SimulatorChatProps) => 
                 />
               </div>
               
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Gemini API Key</label>
+                <div className="flex space-x-2">
+                  <Input
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="Enter your Gemini API key"
+                    className="flex-1"
+                  />
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      window.open('https://makersuite.google.com/app/apikey', '_blank');
+                    }}
+                  >
+                    <Key className="h-4 w-4 mr-2" />
+                    Get Key
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Get your API key from Google AI Studio. Your key is stored only in your browser's local storage.
+                </p>
+              </div>
+              
               <div className="flex items-center p-2 rounded-md bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-200 text-sm">
                 <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0" />
-                <p>This is a simulation. Responses are generated based on the persona's traits and are not from a real person.</p>
+                <p>This integrates with Google's Gemini API to generate responses based on the persona's traits.</p>
               </div>
             </div>
           </motion.div>
@@ -217,7 +275,7 @@ const SimulatorChat = ({ persona, initialConversation }: SimulatorChatProps) => 
             </div>
             <h3 className="text-lg font-medium">Start a conversation</h3>
             <p className="text-muted-foreground max-w-md mt-2">
-              Send a message to start chatting with {persona.name}. The responses will be simulated based on their traits and characteristics.
+              Send a message to start chatting with {persona.name}. Responses are generated by Gemini-1.5-flash based on the persona's traits.
             </p>
           </div>
         ) : (
