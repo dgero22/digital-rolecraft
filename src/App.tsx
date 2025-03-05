@@ -23,6 +23,7 @@ const App = () => (
           <Route path="/create" element={<CreatePersona />} />
           <Route path="/library" element={<PersonaLibrary />} />
           <Route path="/simulator" element={<Simulator />} />
+          <Route path="/group-chat" element={<Simulator />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

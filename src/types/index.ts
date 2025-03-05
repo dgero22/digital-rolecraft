@@ -40,9 +40,9 @@ export interface Conversation {
   id: string;
   personaId: string;
   isGroup?: boolean;
-  participantIds?: string[]; // Added for group conversations
+  participantIds?: string[]; // Array of persona IDs for group conversations
   messages: Message[];
-  title?: string; // Added a title for the conversation
+  title?: string; // Title for the conversation, especially useful for group chats
   createdAt: string;
   updatedAt: string;
 }

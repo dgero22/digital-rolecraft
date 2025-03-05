@@ -18,6 +18,13 @@ interface GroupChatProps {
 }
 
 const GroupChat = ({ personas, initialConversation, availablePersonas }: GroupChatProps) => {
+  // Check if personas exist and if not, avoid rendering
+  if (!personas || personas.length === 0) {
+    return <div className="h-full flex items-center justify-center p-4">
+      <p>Please select at least one persona to start a group chat</p>
+    </div>;
+  }
+  
   const [messages, setMessages] = useState<Message[]>(
     initialConversation?.messages || []
   );
@@ -151,7 +158,7 @@ const GroupChat = ({ personas, initialConversation, availablePersonas }: GroupCh
   return (
     <div className="h-full flex flex-col rounded-lg overflow-hidden bg-secondary/50">
       <ChatHeader 
-        persona={participants[0]}
+        persona={participants[0] || {} as Persona}
         isGroup={true}
         participantCount={participants.length}
         onToggleSettings={() => setShowSettings(!showSettings)}
@@ -161,15 +168,17 @@ const GroupChat = ({ personas, initialConversation, availablePersonas }: GroupCh
       />
       
       <AnimatePresence>
-        <GroupChatSettings 
-          isVisible={showSettings}
-          conversationTitle={conversationTitle}
-          onConversationTitleChange={setConversationTitle}
-          availablePersonas={availablePersonas}
-          selectedPersonas={participants}
-          onAddPersona={handleAddPersona}
-          onRemovePersona={handleRemovePersona}
-        />
+        {showSettings && (
+          <GroupChatSettings 
+            isVisible={showSettings}
+            conversationTitle={conversationTitle}
+            onConversationTitleChange={setConversationTitle}
+            availablePersonas={availablePersonas}
+            selectedPersonas={participants}
+            onAddPersona={handleAddPersona}
+            onRemovePersona={handleRemovePersona}
+          />
+        )}
       </AnimatePresence>
       
       <MessageList 
@@ -183,7 +192,7 @@ const GroupChat = ({ personas, initialConversation, availablePersonas }: GroupCh
         onInputChange={setInputValue}
         onSendMessage={handleSendMessage}
         isGenerating={isGenerating}
-        persona={participants[0]}
+        persona={participants[0] || {} as Persona}
       />
     </div>
   );
