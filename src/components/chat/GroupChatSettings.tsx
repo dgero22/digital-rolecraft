@@ -40,15 +40,16 @@ const GroupChatSettings: React.FC<GroupChatSettingsProps> = ({
       .toUpperCase();
   };
 
-  if (!isVisible) return null;
-
+  // Removed conditional return so the component always renders with animation
+  
   return (
     <motion.div
       initial={{ height: 0, opacity: 0 }}
-      animate={{ height: 'auto', opacity: 1 }}
+      animate={{ height: isVisible ? 'auto' : 0, opacity: isVisible ? 1 : 0 }}
       exit={{ height: 0, opacity: 0 }}
       transition={{ duration: 0.2 }}
       className="border-b overflow-hidden"
+      style={{ display: 'block' }} // Ensure the div is always in the DOM
     >
       <div className="p-4 space-y-4">
         <div className="space-y-2">
