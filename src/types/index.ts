@@ -1,3 +1,4 @@
+
 export interface Persona {
   id: string;
   name: string;
@@ -6,7 +7,7 @@ export interface Persona {
   background: string;
   traits: PersonaTraits;
   dataSources: DataSource[];
-  geminiApiKey?: string; // Add optional Gemini API key field
+  geminiApiKey?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -38,7 +39,10 @@ export interface Message {
 export interface Conversation {
   id: string;
   personaId: string;
+  isGroup?: boolean;
+  participantIds?: string[]; // Added for group conversations
   messages: Message[];
+  title?: string; // Added a title for the conversation
   createdAt: string;
   updatedAt: string;
 }

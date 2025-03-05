@@ -10,9 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Navbar from "@/components/Navbar";
 import SimulatorChat from "@/components/SimulatorChat";
-import { ArrowLeft, Users } from "lucide-react";
+import GroupChat from "@/components/chat/GroupChat";
+import { ArrowLeft, Users, MessageCircle, UserPlus } from "lucide-react";
 import type { Persona, Conversation } from '@/types';
 
 const Simulator = () => {
@@ -23,6 +25,8 @@ const Simulator = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [chatMode, setChatMode] = useState<'single' | 'group'>('single');
+  const [selectedGroupPersonas, setSelectedGroupPersonas] = useState<Persona[]>([]);
   
   useEffect(() => {
     // Load personas from localStorage
@@ -37,18 +41,43 @@ const Simulator = () => {
     const searchParams = new URLSearchParams(location.search);
     const personaId = searchParams.get('personaId');
     const conversationId = searchParams.get('conversationId');
+    const mode = searchParams.get('mode');
+    
+    if (mode === 'group') {
+      setChatMode('group');
+    } else {
+      setChatMode('single');
+    }
     
     if (personaId && storedPersonas.some((p: Persona) => p.id === personaId)) {
       setSelectedPersonaId(personaId);
       
+      // For group mode, initialize with the selected persona
+      if (mode === 'group') {
+        const persona = storedPersonas.find((p: Persona) => p.id === personaId);
+        if (persona) {
+          setSelectedGroupPersonas([persona]);
+        }
+      }
+      
       // If conversation ID is provided and valid, select it
       if (conversationId) {
         const conversation = storedConversations.find(
-          (c: Conversation) => c.id === conversationId && c.personaId === personaId
+          (c: Conversation) => c.id === conversationId
         );
         
         if (conversation) {
           setSelectedConversationId(conversationId);
+          
+          // If it's a group conversation, load the participants
+          if (conversation.isGroup && conversation.participantIds) {
+            const groupPersonas = conversation.participantIds
+              .map(id => storedPersonas.find((p: Persona) => p.id === id))
+              .filter(Boolean) as Persona[];
+              
+            setSelectedGroupPersonas(groupPersonas);
+            setChatMode('group');
+          }
         }
       }
     } else if (storedPersonas.length > 0) {
@@ -62,23 +91,72 @@ const Simulator = () => {
   const selectedConversation = conversations.find(c => c.id === selectedConversationId);
   
   const personaConversations = conversations.filter(
-    c => c.personaId === selectedPersonaId
+    c => c.personaId === selectedPersonaId && !c.isGroup
+  );
+  
+  const groupConversations = conversations.filter(
+    c => c.isGroup
   );
   
   const handlePersonaChange = (personaId: string) => {
     setSelectedPersonaId(personaId);
     setSelectedConversationId(null);
-    navigate(`/simulator?personaId=${personaId}`);
+    
+    if (chatMode === 'group') {
+      const persona = personas.find(p => p.id === personaId);
+      if (persona) {
+        setSelectedGroupPersonas([persona]);
+      }
+      navigate(`/simulator?mode=group&personaId=${personaId}`);
+    } else {
+      navigate(`/simulator?personaId=${personaId}`);
+    }
   };
   
   const handleConversationChange = (conversationId: string) => {
     // If "new" is selected, set selectedConversationId to null to start a new conversation
     if (conversationId === 'new') {
       setSelectedConversationId(null);
-      navigate(`/simulator?personaId=${selectedPersonaId}`);
+      if (chatMode === 'group') {
+        navigate(`/simulator?mode=group&personaId=${selectedPersonaId}`);
+      } else {
+        navigate(`/simulator?personaId=${selectedPersonaId}`);
+      }
     } else {
       setSelectedConversationId(conversationId);
-      navigate(`/simulator?personaId=${selectedPersonaId}&conversationId=${conversationId}`);
+      
+      // Check if this is a group conversation
+      const conversation = conversations.find(c => c.id === conversationId);
+      if (conversation?.isGroup) {
+        setChatMode('group');
+        navigate(`/simulator?mode=group&conversationId=${conversationId}`);
+        
+        // Load the participants
+        if (conversation.participantIds) {
+          const groupPersonas = conversation.participantIds
+            .map(id => personas.find(p => p.id === id))
+            .filter(Boolean) as Persona[];
+            
+          setSelectedGroupPersonas(groupPersonas);
+        }
+      } else {
+        setChatMode('single');
+        navigate(`/simulator?personaId=${selectedPersonaId}&conversationId=${conversationId}`);
+      }
+    }
+  };
+  
+  const handleModeChange = (mode: string) => {
+    setChatMode(mode as 'single' | 'group');
+    setSelectedConversationId(null);
+    
+    if (mode === 'group') {
+      if (selectedPersona) {
+        setSelectedGroupPersonas([selectedPersona]);
+      }
+      navigate(`/simulator?mode=group${selectedPersonaId ? `&personaId=${selectedPersonaId}` : ''}`);
+    } else {
+      navigate(`/simulator${selectedPersonaId ? `?personaId=${selectedPersonaId}` : ''}`);
     }
   };
 
@@ -111,42 +189,68 @@ const Simulator = () => {
                 </p>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Select 
-                  value={selectedPersonaId || ''} 
-                  onValueChange={handlePersonaChange}
-                  disabled={personas.length === 0}
-                >
-                  <SelectTrigger className="w-full sm:w-[200px]">
-                    <SelectValue placeholder="Select a persona" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {personas.map(persona => (
-                      <SelectItem key={persona.id} value={persona.id}>
-                        {persona.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <Select 
-                  value={selectedConversationId || 'new'} 
-                  onValueChange={handleConversationChange}
-                  disabled={!selectedPersonaId}
-                >
-                  <SelectTrigger className="w-full sm:w-[200px]">
-                    <SelectValue placeholder="Select conversation" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="new">New conversation</SelectItem>
-                    {personaConversations.map(conversation => (
+              <Tabs 
+                defaultValue={chatMode} 
+                className="w-full md:w-auto"
+                onValueChange={handleModeChange}
+                value={chatMode}
+              >
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="single" className="gap-1">
+                    <MessageCircle className="h-4 w-4 mr-1" />
+                    Single Chat
+                  </TabsTrigger>
+                  <TabsTrigger value="group" className="gap-1">
+                    <Users className="h-4 w-4 mr-1" />
+                    Group Chat
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              <Select 
+                value={selectedPersonaId || ''} 
+                onValueChange={handlePersonaChange}
+                disabled={personas.length === 0}
+              >
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder="Select a persona" />
+                </SelectTrigger>
+                <SelectContent>
+                  {personas.map(persona => (
+                    <SelectItem key={persona.id} value={persona.id}>
+                      {persona.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select 
+                value={selectedConversationId || 'new'} 
+                onValueChange={handleConversationChange}
+                disabled={!selectedPersonaId}
+              >
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder="Select conversation" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">New conversation</SelectItem>
+                  {chatMode === 'single' ? (
+                    personaConversations.map(conversation => (
                       <SelectItem key={conversation.id} value={conversation.id}>
                         {new Date(conversation.createdAt).toLocaleDateString()}
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                    ))
+                  ) : (
+                    groupConversations.map(conversation => (
+                      <SelectItem key={conversation.id} value={conversation.id}>
+                        {conversation.title || new Date(conversation.createdAt).toLocaleDateString()}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             </div>
             
             {isLoading ? (
@@ -168,10 +272,18 @@ const Simulator = () => {
               </div>
             ) : selectedPersona ? (
               <div className="h-[600px] rounded-lg overflow-hidden border">
-                <SimulatorChat
-                  persona={selectedPersona}
-                  initialConversation={selectedConversation}
-                />
+                {chatMode === 'single' ? (
+                  <SimulatorChat
+                    persona={selectedPersona}
+                    initialConversation={selectedConversation}
+                  />
+                ) : (
+                  <GroupChat
+                    personas={selectedGroupPersonas}
+                    initialConversation={selectedConversation}
+                    availablePersonas={personas}
+                  />
+                )}
               </div>
             ) : (
               <div className="h-[600px] flex items-center justify-center bg-secondary/50 rounded-lg">

@@ -2,11 +2,14 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Settings, RefreshCw, Save } from "lucide-react";
+import { Settings, RefreshCw, Save, Users } from "lucide-react";
 import type { Persona } from '@/types';
 
 interface ChatHeaderProps {
   persona: Persona;
+  isGroup?: boolean;
+  participantCount?: number;
+  title?: string;
   onToggleSettings: () => void;
   onResetConversation: () => void;
   onSaveConversation: () => void;
@@ -14,6 +17,9 @@ interface ChatHeaderProps {
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({
   persona,
+  isGroup = false,
+  participantCount = 0,
+  title,
   onToggleSettings,
   onResetConversation,
   onSaveConversation
@@ -29,13 +35,29 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   return (
     <div className="flex items-center justify-between p-4 border-b">
       <div className="flex items-center space-x-3">
-        <Avatar>
-          <AvatarImage src={persona.avatar} alt={persona.name} />
-          <AvatarFallback>{getInitials(persona.name)}</AvatarFallback>
-        </Avatar>
+        {isGroup ? (
+          <div className="relative">
+            <Avatar className="h-10 w-10 bg-primary/10">
+              <AvatarFallback className="bg-primary/10">
+                <Users className="h-5 w-5 text-primary" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute -bottom-1 -right-1 bg-background text-xs rounded-full px-1 font-medium border">
+              {participantCount}
+            </div>
+          </div>
+        ) : (
+          <Avatar>
+            <AvatarImage src={persona.avatar} alt={persona.name} />
+            <AvatarFallback>{getInitials(persona.name)}</AvatarFallback>
+          </Avatar>
+        )}
+        
         <div>
-          <h3 className="font-medium">{persona.name}</h3>
-          <p className="text-xs text-muted-foreground">{persona.tagline}</p>
+          <h3 className="font-medium">{isGroup ? title || 'Group Conversation' : persona.name}</h3>
+          <p className="text-xs text-muted-foreground">
+            {isGroup ? 'Multiple personas' : persona.tagline}
+          </p>
         </div>
       </div>
       
