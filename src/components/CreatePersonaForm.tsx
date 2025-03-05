@@ -25,7 +25,9 @@ import {
   Plus, 
   X, 
   Save,
-  Users
+  Users,
+  AlertTriangle,
+  Key
 } from "lucide-react";
 import type { Persona, DataSource, PersonaTraits } from '@/types';
 import { toast } from 'sonner';
@@ -59,6 +61,7 @@ const CreatePersonaForm = ({ initialData, onSave }: CreatePersonaFormProps) => {
       background: '',
       traits: DEFAULT_TRAITS,
       dataSources: DEFAULT_DATA_SOURCES,
+      geminiApiKey: localStorage.getItem('gemini_api_key') || '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -260,6 +263,10 @@ const CreatePersonaForm = ({ initialData, onSave }: CreatePersonaFormProps) => {
       return;
     }
     
+    if (formData.geminiApiKey) {
+      localStorage.setItem('gemini_api_key', formData.geminiApiKey);
+    }
+    
     const finalPersona: Persona = {
       ...(formData as Persona),
       updatedAt: new Date().toISOString()
@@ -329,6 +336,36 @@ const CreatePersonaForm = ({ initialData, onSave }: CreatePersonaFormProps) => {
                       onChange={(e) => setFormData({ ...formData, background: e.target.value })}
                       className="resize-none"
                     />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Gemini API Key</label>
+                    <div className="flex space-x-2">
+                      <Input
+                        type="password"
+                        value={formData.geminiApiKey || ''}
+                        onChange={(e) => setFormData({ ...formData, geminiApiKey: e.target.value })}
+                        placeholder="Enter your Gemini API key"
+                        className="flex-1"
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          window.open('https://makersuite.google.com/app/apikey', '_blank');
+                        }}
+                      >
+                        <Key className="h-4 w-4 mr-2" />
+                        Get Key
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Get your API key from Google AI Studio. Your key is stored with this persona.
+                    </p>
+                    <div className="flex items-center p-2 rounded-md bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-200 text-sm mt-2">
+                      <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <p>This integrates with Google's Gemini API to simulate realistic persona responses.</p>
+                    </div>
                   </div>
                 </div>
                 

@@ -1,4 +1,3 @@
-
 export interface Persona {
   id: string;
   name: string;
@@ -7,6 +6,7 @@ export interface Persona {
   background: string;
   traits: PersonaTraits;
   dataSources: DataSource[];
+  geminiApiKey?: string; // Add optional Gemini API key field
   createdAt: string;
   updatedAt: string;
 }

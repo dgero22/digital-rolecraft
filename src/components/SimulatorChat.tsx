@@ -27,28 +27,18 @@ const SimulatorChat = ({ persona, initialConversation }: SimulatorChatProps) => 
   const [conversationName, setConversationName] = useState(
     initialConversation?.id || `Conversation with ${persona.name}`
   );
-  const [apiKey, setApiKey] = useState(() => {
-    return localStorage.getItem('gemini_api_key') || '';
-  });
-  
-  useEffect(() => {
-    if (apiKey) {
-      localStorage.setItem('gemini_api_key', apiKey);
-    }
-  }, [apiKey]);
   
   const simulatePersonaResponse = async (userMessage: string) => {
     setIsGenerating(true);
     
-    if (!apiKey) {
-      toast.error("Please enter your Gemini API key in the settings.");
+    if (!persona.geminiApiKey) {
+      toast.error("This persona doesn't have a Gemini API key. Please edit the persona to add an API key.");
       setIsGenerating(false);
-      setShowSettings(true);
       return;
     }
     
     const newPersonaMessage = await generatePersonaResponse(
-      apiKey,
+      persona.geminiApiKey,
       userMessage,
       persona,
       messages
@@ -107,9 +97,7 @@ const SimulatorChat = ({ persona, initialConversation }: SimulatorChatProps) => 
         <ChatSettings 
           isVisible={showSettings}
           conversationName={conversationName}
-          apiKey={apiKey}
           onConversationNameChange={setConversationName}
-          onApiKeyChange={setApiKey}
         />
       </AnimatePresence>
       
