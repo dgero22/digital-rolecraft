@@ -84,21 +84,27 @@ const SimulatorChat = ({ persona, initialConversation }: SimulatorChatProps) => 
     saveConversation(conversation, initialConversation);
   };
 
+  const toggleSettings = () => {
+    setShowSettings(prev => !prev);
+  };
+
   return (
     <div className="h-full flex flex-col rounded-lg overflow-hidden bg-secondary/50">
       <ChatHeader 
         persona={persona}
-        onToggleSettings={() => setShowSettings(!showSettings)}
+        onToggleSettings={toggleSettings}
         onResetConversation={handleResetConversation}
         onSaveConversation={handleSaveConversation}
       />
       
       <AnimatePresence>
-        <ChatSettings 
-          isVisible={showSettings}
-          conversationName={conversationName}
-          onConversationNameChange={setConversationName}
-        />
+        {showSettings && (
+          <ChatSettings 
+            isVisible={showSettings}
+            conversationName={conversationName}
+            onConversationNameChange={setConversationName}
+          />
+        )}
       </AnimatePresence>
       
       <MessageList 

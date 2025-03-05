@@ -155,13 +155,17 @@ const GroupChat = ({ personas, initialConversation, availablePersonas }: GroupCh
     setParticipants(prev => prev.filter(p => p.id !== personaId));
   };
 
+  const toggleSettings = () => {
+    setShowSettings(prev => !prev);
+  };
+
   return (
     <div className="h-full flex flex-col rounded-lg overflow-hidden bg-secondary/50">
       <ChatHeader 
         persona={participants[0] || {} as Persona}
         isGroup={true}
         participantCount={participants.length}
-        onToggleSettings={() => setShowSettings(!showSettings)}
+        onToggleSettings={toggleSettings}
         onResetConversation={handleResetConversation}
         onSaveConversation={handleSaveConversation}
         title={conversationTitle}
