@@ -1,3 +1,4 @@
+
 export interface Persona {
   id: string;
   name: string;
@@ -47,4 +48,37 @@ export interface Conversation {
   title?: string; // Title for the conversation, especially useful for group chats
   createdAt: string;
   updatedAt: string;
+}
+
+// New Organization Chart interfaces
+export interface OrgChart {
+  id: string;
+  name: string;
+  nodes: OrgChartNode[];
+  edges: OrgChartEdge[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrgChartNode {
+  id: string;
+  type: string;
+  personaId?: string; // Reference to a persona
+  position: {
+    x: number;
+    y: number;
+  };
+  data: {
+    label: string;
+    role?: string;
+    department?: string;
+  };
+}
+
+export interface OrgChartEdge {
+  id: string;
+  source: string;
+  target: string;
+  label?: string;
+  type?: string;
 }

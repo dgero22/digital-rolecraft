@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import Navbar from "@/components/Navbar";
 import PersonaCard from "@/components/PersonaCard";
-import { Plus, Search, Users } from "lucide-react";
+import { Plus, Search, Users, GitBranch } from "lucide-react";
 import type { Persona } from '@/types';
 
 const PersonaLibrary = () => {
@@ -77,12 +77,21 @@ const PersonaLibrary = () => {
                 </p>
               </div>
               
-              <Button asChild>
-                <Link to="/create" className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  New Persona
-                </Link>
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button asChild>
+                  <Link to="/create" className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    New Persona
+                  </Link>
+                </Button>
+                
+                <Button variant="outline" asChild>
+                  <Link to="/org-chart" className="flex items-center gap-2">
+                    <GitBranch className="h-4 w-4" />
+                    Org Chart
+                  </Link>
+                </Button>
+              </div>
             </div>
             
             <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -142,7 +151,7 @@ const PersonaLibrary = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {sortedPersonas.map((persona, index) => (
+                {sortedPersonas.map((persona) => (
                   <PersonaCard key={persona.id} persona={persona} />
                 ))}
               </div>

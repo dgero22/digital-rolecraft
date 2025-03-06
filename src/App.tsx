@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import CreatePersona from "./pages/CreatePersona";
 import PersonaLibrary from "./pages/PersonaLibrary";
 import Simulator from "./pages/Simulator";
+import OrgChart from "./pages/OrgChart";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,8 @@ const App = () => (
             <Route path="/library" element={<PersonaLibrary />} />
             <Route path="/simulator" element={<Simulator />} />
             <Route path="/group-chat" element={<Simulator />} />
+            <Route path="/org-chart" element={<OrgChart />} />
+            <Route path="/org-chart/:id" element={<OrgChart />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
