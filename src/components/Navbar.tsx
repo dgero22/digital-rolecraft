@@ -2,11 +2,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Users, PlusCircle, MessageCircle, Home } from "lucide-react";
+import { Users, PlusCircle, MessageCircle, Home, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/hooks/use-theme";
 
 const Navbar = () => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const { theme, setTheme } = useTheme();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -24,6 +26,10 @@ const Navbar = () => {
     { path: '/simulator', label: 'Simulator', icon: <MessageCircle className="h-4 w-4 mr-1" /> },
   ];
 
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 py-4 transition-all duration-300 ${
@@ -35,7 +41,7 @@ const Navbar = () => {
           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center">
             <Users className="h-4 w-4 text-white" />
           </div>
-          <span className="font-medium text-lg tracking-tight">Persona</span>
+          <span className="font-medium text-lg tracking-tight">Rolepanion</span>
         </Link>
         
         <nav className="hidden md:flex items-center space-x-1">
@@ -56,6 +62,19 @@ const Navbar = () => {
         </nav>
         
         <div className="flex items-center space-x-4">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={toggleTheme}
+            className="mr-2"
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
+          </Button>
+          
           <Button 
             asChild
             variant="ghost" 

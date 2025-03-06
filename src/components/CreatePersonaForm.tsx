@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { nanoid } from 'nanoid';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,7 +26,9 @@ import {
   Save,
   Users,
   AlertTriangle,
-  Key
+  Key,
+  Upload,
+  Link as LinkIcon
 } from "lucide-react";
 import type { Persona, DataSource, PersonaTraits } from '@/types';
 import { toast } from 'sonner';
@@ -35,6 +36,10 @@ import { toast } from 'sonner';
 interface CreatePersonaFormProps {
   initialData?: Persona;
   onSave?: (persona: Persona) => void;
+}
+
+interface DataSourceURL {
+  [key: string]: string;
 }
 
 const DEFAULT_TRAITS: PersonaTraits = {
@@ -52,6 +57,8 @@ const DEFAULT_DATA_SOURCES: DataSource[] = [];
 const CreatePersonaForm = ({ initialData, onSave }: CreatePersonaFormProps) => {
   const navigate = useNavigate();
   const [currentTab, setCurrentTab] = useState('basic');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [formData, setFormData] = useState<Partial<Persona>>(
     initialData || {
       id: nanoid(),
@@ -66,6 +73,9 @@ const CreatePersonaForm = ({ initialData, onSave }: CreatePersonaFormProps) => {
       updatedAt: new Date().toISOString(),
     }
   );
+  
+  const [dataSourceUrls, setDataSourceUrls] = useState<DataSourceURL>({});
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   const [currentTrait, setCurrentTrait] = useState('');
   const [currentInterest, setCurrentInterest] = useState('');
@@ -245,7 +255,9 @@ const CreatePersonaForm = ({ initialData, onSave }: CreatePersonaFormProps) => {
   };
   
   const handleAddDataSource = (type: DataSource['type'], name: string, description: string) => {
+    const sourceId = nanoid();
     const newDataSource: DataSource = {
+      id: sourceId,
       type,
       name,
       description
@@ -255,6 +267,61 @@ const CreatePersonaForm = ({ initialData, onSave }: CreatePersonaFormProps) => {
       ...formData,
       dataSources: [...(formData.dataSources || []), newDataSource]
     });
+    
+    if (type === 'custom' && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+  
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      toast.success(`File "${file.name}" selected for upload`);
+      
+      const dataSources = formData.dataSources || [];
+      const customSourceIndex = dataSources.findIndex(source => source.type === 'custom');
+      
+      if (customSourceIndex !== -1) {
+        const updatedSources = [...dataSources];
+        updatedSources[customSourceIndex] = {
+          ...updatedSources[customSourceIndex],
+          name: `Custom: ${file.name}`,
+          description: `Data from file: ${file.name} (${file.size} bytes)`
+        };
+        
+        setFormData({
+          ...formData,
+          dataSources: updatedSources
+        });
+      }
+    }
+  };
+  
+  const handleSaveUrl = (sourceId: string) => {
+    const url = dataSourceUrls[sourceId];
+    if (!url) {
+      toast.error("Please enter a valid URL");
+      return;
+    }
+    
+    const dataSources = formData.dataSources || [];
+    const sourceIndex = dataSources.findIndex(source => source.id === sourceId);
+    
+    if (sourceIndex !== -1) {
+      const updatedSources = [...dataSources];
+      updatedSources[sourceIndex] = {
+        ...updatedSources[sourceIndex],
+        url
+      };
+      
+      setFormData({
+        ...formData,
+        dataSources: updatedSources
+      });
+      
+      toast.success("URL saved successfully");
+    }
   };
   
   const handleSave = () => {
@@ -713,36 +780,86 @@ const CreatePersonaForm = ({ initialData, onSave }: CreatePersonaFormProps) => {
                     'Manually entered custom data'
                   )}
                 >
-                  <Plus className="h-4 w-4" />
-                  <span className="text-xs font-normal">Custom</span>
+                  <Upload className="h-4 w-4" />
+                  <span className="text-xs font-normal">Custom File</span>
                 </Button>
               </div>
               
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={handleFileChange}
+                accept=".txt,.pdf,.doc,.docx"
+              />
+              
               <div className="mt-6">
                 <h3 className="text-sm font-medium mb-3">Added Data Sources</h3>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {(formData.dataSources || []).length > 0 ? (
                     (formData.dataSources || []).map((source, index) => (
                       <Card key={index} className="overflow-hidden">
-                        <CardContent className="p-3 flex items-center justify-between">
-                          <div>
-                            <h4 className="text-sm font-medium">{source.name}</h4>
-                            <p className="text-xs text-muted-foreground">{source.description}</p>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div>
+                              <h4 className="text-sm font-medium">{source.name}</h4>
+                              <p className="text-xs text-muted-foreground">{source.description}</p>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => {
+                                const newSources = [...(formData.dataSources || [])];
+                                newSources.splice(index, 1);
+                                setFormData({
+                                  ...formData,
+                                  dataSources: newSources
+                                });
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
                           </div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => {
-                              const newSources = [...(formData.dataSources || [])];
-                              newSources.splice(index, 1);
-                              setFormData({
-                                ...formData,
-                                dataSources: newSources
-                              });
-                            }}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+                          
+                          {source.type !== 'custom' && (
+                            <div className="flex gap-2 items-center">
+                              <Input
+                                placeholder={`Enter ${source.name} URL`}
+                                value={dataSourceUrls[source.id || ''] || ''}
+                                onChange={(e) => {
+                                  setDataSourceUrls({
+                                    ...dataSourceUrls,
+                                    [source.id || '']: e.target.value
+                                  });
+                                }}
+                                className="flex-1"
+                              />
+                              <Button 
+                                size="sm" 
+                                variant="secondary"
+                                onClick={() => handleSaveUrl(source.id || '')}
+                              >
+                                <LinkIcon className="h-4 w-4 mr-1" />
+                                Save
+                              </Button>
+                            </div>
+                          )}
+                          
+                          {source.type === 'custom' && selectedFile && (
+                            <div className="mt-2">
+                              <Badge variant="secondary">
+                                {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+                              </Badge>
+                            </div>
+                          )}
+                          
+                          {source.url && (
+                            <div className="mt-2">
+                              <Badge variant="outline" className="text-xs">
+                                URL: {source.url}
+                              </Badge>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     ))

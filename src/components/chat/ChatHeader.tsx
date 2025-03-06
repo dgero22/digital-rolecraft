@@ -1,90 +1,89 @@
 
 import React from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Settings, RefreshCw, Save, Users } from "lucide-react";
+import { Settings, Undo, Save, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 import type { Persona } from '@/types';
 
 interface ChatHeaderProps {
   persona: Persona;
   isGroup?: boolean;
   participantCount?: number;
-  title?: string;
   onToggleSettings: () => void;
   onResetConversation: () => void;
   onSaveConversation: () => void;
+  title?: string;
+  extraActions?: React.ReactNode;
 }
 
-const ChatHeader: React.FC<ChatHeaderProps> = ({
+const ChatHeader = ({
   persona,
   isGroup = false,
   participantCount = 0,
-  title,
   onToggleSettings,
   onResetConversation,
-  onSaveConversation
-}) => {
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase();
-  };
-
+  onSaveConversation,
+  title,
+  extraActions
+}: ChatHeaderProps) => {
   return (
-    <div className="flex items-center justify-between p-4 border-b">
-      <div className="flex items-center space-x-3">
-        {isGroup ? (
-          <div className="relative">
-            <Avatar className="h-10 w-10 bg-primary/10">
-              <AvatarFallback className="bg-primary/10">
-                <Users className="h-5 w-5 text-primary" />
-              </AvatarFallback>
-            </Avatar>
-            <div className="absolute -bottom-1 -right-1 bg-background text-xs rounded-full px-1 font-medium border">
-              {participantCount}
-            </div>
-          </div>
-        ) : (
-          <Avatar>
-            <AvatarImage src={persona.avatar} alt={persona.name} />
-            <AvatarFallback>{getInitials(persona.name)}</AvatarFallback>
-          </Avatar>
-        )}
+    <header className="flex items-center justify-between p-3 border-b border-border bg-card/50">
+      <div className="flex items-center gap-3">
+        <Avatar className="h-9 w-9 border border-border">
+          <AvatarImage src={persona.avatar} alt={persona.name} />
+          <AvatarFallback>
+            {isGroup ? (
+              <Users className="h-4 w-4" />
+            ) : (
+              persona.name?.charAt(0) || '?'
+            )}
+          </AvatarFallback>
+        </Avatar>
         
         <div>
-          <h3 className="font-medium">{isGroup ? title || 'Group Conversation' : persona.name}</h3>
-          <p className="text-xs text-muted-foreground">
-            {isGroup ? 'Multiple personas' : persona.tagline}
+          <h3 className="font-medium text-sm leading-tight">
+            {isGroup ? title || 'Group Chat' : persona.name}
+          </h3>
+          <p className="text-xs text-muted-foreground leading-tight">
+            {isGroup ? `${participantCount} participants` : persona.tagline}
           </p>
         </div>
       </div>
       
-      <div className="flex space-x-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onToggleSettings}
-        >
-          <Settings className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onResetConversation}
-        >
-          <RefreshCw className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
+      <div className="flex items-center gap-1.5">
+        {extraActions}
+        
+        <Button 
+          variant="ghost" 
+          size="icon"
           onClick={onSaveConversation}
+          title="Save conversation"
         >
           <Save className="h-4 w-4" />
         </Button>
+        
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={onResetConversation}
+          title="Reset conversation"
+        >
+          <Undo className="h-4 w-4" />
+        </Button>
+        
+        <Separator orientation="vertical" className="h-6 mx-1" />
+        
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={onToggleSettings}
+          title="Chat settings"
+        >
+          <Settings className="h-4 w-4" />
+        </Button>
       </div>
-    </div>
+    </header>
   );
 };
 

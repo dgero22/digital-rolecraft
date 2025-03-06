@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { nanoid } from 'nanoid';
+import { Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import type { Persona, Message, Conversation } from '@/types';
 
 import ChatHeader from './ChatHeader';
@@ -159,6 +161,39 @@ const GroupChat = ({ personas, initialConversation, availablePersonas }: GroupCh
     setShowSettings(prev => !prev);
   };
 
+  const exportConversation = () => {
+    if (messages.length === 0) {
+      toast.error("No messages to export");
+      return;
+    }
+    
+    const formatDate = (dateString: string) => {
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    };
+    
+    let content = `# ${conversationTitle}\n`;
+    content += `Exported on: ${new Date().toLocaleString()}\n\n`;
+    
+    messages.forEach(message => {
+      const senderName = message.sender === 'user' 
+        ? 'You' 
+        : participants.find(p => p.id === message.personaId)?.name || 'Unknown';
+      
+      content += `[${formatDate(message.timestamp)}] ${senderName}:\n${message.content}\n\n`;
+    });
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${conversationTitle.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    
+    URL.revokeObjectURL(url);
+    toast.success("Conversation exported successfully");
+  };
+
   return (
     <div className="h-full flex flex-col rounded-lg overflow-hidden bg-secondary/50">
       <ChatHeader 
@@ -169,6 +204,16 @@ const GroupChat = ({ personas, initialConversation, availablePersonas }: GroupCh
         onResetConversation={handleResetConversation}
         onSaveConversation={handleSaveConversation}
         title={conversationTitle}
+        extraActions={
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={exportConversation}
+            title="Export conversation"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+        }
       />
       
       <div className="relative">

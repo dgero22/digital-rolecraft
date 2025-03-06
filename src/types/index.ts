@@ -1,4 +1,3 @@
-
 export interface Persona {
   id: string;
   name: string;
@@ -23,9 +22,12 @@ export interface PersonaTraits {
 }
 
 export interface DataSource {
+  id?: string;
   type: 'social' | 'professional' | 'behavioral' | 'custom';
   name: string;
   description: string;
+  url?: string;
+  file?: string; // Path or reference to the file
 }
 
 export interface Message {
