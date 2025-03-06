@@ -97,15 +97,17 @@ const SimulatorChat = ({ persona, initialConversation }: SimulatorChatProps) => 
         onSaveConversation={handleSaveConversation}
       />
       
-      <AnimatePresence>
-        {showSettings && (
-          <ChatSettings 
-            isVisible={showSettings}
-            conversationName={conversationName}
-            onConversationNameChange={setConversationName}
-          />
-        )}
-      </AnimatePresence>
+      <div className="relative">
+        <AnimatePresence>
+          {showSettings && (
+            <ChatSettings 
+              isVisible={showSettings}
+              conversationName={conversationName}
+              onConversationNameChange={setConversationName}
+            />
+          )}
+        </AnimatePresence>
+      </div>
       
       <MessageList 
         messages={messages}

@@ -48,7 +48,7 @@ const GroupChatSettings: React.FC<GroupChatSettingsProps> = ({
       animate={{ height: isVisible ? 'auto' : 0, opacity: isVisible ? 1 : 0 }}
       exit={{ height: 0, opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="border-b overflow-hidden"
+      className="border-b overflow-hidden relative z-10 bg-secondary/90 backdrop-blur-sm"
       style={{ display: 'block' }} // Ensure the div is always in the DOM
     >
       <div className="p-4 space-y-4">

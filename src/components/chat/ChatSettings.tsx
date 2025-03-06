@@ -22,7 +22,7 @@ const ChatSettings: React.FC<ChatSettingsProps> = ({
       animate={{ height: 'auto', opacity: 1 }}
       exit={{ height: 0, opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="border-b overflow-hidden"
+      className="border-b overflow-hidden relative z-10 bg-secondary/90 backdrop-blur-sm"
     >
       <div className="p-4 space-y-4">
         <div className="space-y-2">
