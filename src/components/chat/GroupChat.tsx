@@ -171,19 +171,21 @@ const GroupChat = ({ personas, initialConversation, availablePersonas }: GroupCh
         title={conversationTitle}
       />
       
-      <AnimatePresence>
-        {showSettings && (
-          <GroupChatSettings 
-            isVisible={showSettings}
-            conversationTitle={conversationTitle}
-            onConversationTitleChange={setConversationTitle}
-            availablePersonas={availablePersonas}
-            selectedPersonas={participants}
-            onAddPersona={handleAddPersona}
-            onRemovePersona={handleRemovePersona}
-          />
-        )}
-      </AnimatePresence>
+      <div className="relative">
+        <AnimatePresence>
+          {showSettings && (
+            <GroupChatSettings 
+              isVisible={showSettings}
+              conversationTitle={conversationTitle}
+              onConversationTitleChange={setConversationTitle}
+              availablePersonas={availablePersonas}
+              selectedPersonas={participants}
+              onAddPersona={handleAddPersona}
+              onRemovePersona={handleRemovePersona}
+            />
+          )}
+        </AnimatePresence>
+      </div>
       
       <MessageList 
         messages={messages}
