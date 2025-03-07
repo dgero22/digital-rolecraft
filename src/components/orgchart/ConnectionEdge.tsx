@@ -70,7 +70,7 @@ const ConnectionEdge = ({
               }}
               className="bg-background text-xs px-2 py-1 rounded border shadow-sm nodrag"
             >
-              {data.label}
+              {data.label as string}
             </div>
           </EdgeLabelRenderer>
         )}

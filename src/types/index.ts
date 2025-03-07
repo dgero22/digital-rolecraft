@@ -72,6 +72,8 @@ export interface OrgChartNode {
     label: string;
     role?: string;
     department?: string;
+    onEdit?: (personaId?: string) => void;
+    personaId?: string;
   };
 }
 
@@ -81,4 +83,13 @@ export interface OrgChartEdge {
   target: string;
   label?: string;
   type?: string;
+  animated?: boolean;
+  markerEnd?: any;
+  data?: {
+    relationshipType?: string;
+    label?: string;
+    onStartConversation?: (edgeId: string) => void;
+    onDefineRelationship?: (edgeId: string, type: string) => void;
+    onDeleteConnection?: (edgeId: string) => void;
+  };
 }
