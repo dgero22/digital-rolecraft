@@ -125,7 +125,7 @@ const OrgChartEditor = ({
   // Handle node selection
   const onNodeClick = useCallback((event: any, node: OrgChartNode) => {
     setSelectedNode(node);
-    setSelectedNodePersona(node.personaId);
+    setSelectedNodePersona(node.data.personaId);
     setSelectedNodeRole(node.data.role || '');
     setSelectedNodeDepartment(node.data.department || '');
   }, []);
@@ -151,6 +151,7 @@ const OrgChartEditor = ({
       data: {
         label: 'New Employee',
         role: 'Employee',
+        department: '',
         onEdit: onEditPersona,
       },
     };
@@ -198,6 +199,7 @@ const OrgChartEditor = ({
       data: {
         label: 'Me',
         role: 'Your Role',
+        department: '',
         onEdit: () => {
           toast.info('Editing "Me" functionality coming soon!');
         },
@@ -300,6 +302,9 @@ const OrgChartEditor = ({
             data: {
               ...edge.data,
               relationshipType,
+              onStartConversation: handleStartConversation,
+              onDefineRelationship: handleDefineRelationship,
+              onDeleteConnection: handleDeleteConnection,
             }
           };
         }
