@@ -47,8 +47,16 @@ const OrgChart = () => {
       updatedAt: new Date().toISOString(),
     };
     
+    // First save the new chart to localStorage
+    const updatedCharts = [...orgCharts, newChart];
+    localStorage.setItem('orgCharts', JSON.stringify(updatedCharts));
+    setOrgCharts(updatedCharts);
+    
+    // Then set it as current and navigate
     setCurrentChart(newChart);
     navigate(`/org-chart/${newChart.id}`);
+    
+    toast.success('New organization chart created');
   };
 
   const saveChart = (chart: OrgChartType) => {
