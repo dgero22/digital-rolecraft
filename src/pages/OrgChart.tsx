@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -41,7 +40,20 @@ const OrgChart = () => {
     const newChart: OrgChartType = {
       id: nanoid(),
       name: 'New Organization Chart',
-      nodes: [],
+      nodes: [
+        {
+          id: `me-${nanoid(6)}`,
+          type: 'me',
+          position: {
+            x: 400,
+            y: 100,
+          },
+          data: {
+            label: 'Me',
+            role: 'Your Role',
+          },
+        }
+      ],
       edges: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -103,6 +115,14 @@ const OrgChart = () => {
     toast.success('Organization chart deleted');
   };
 
+  const handleEditPersona = (personaId: string) => {
+    navigate(`/create?edit=${personaId}`);
+  };
+
+  const handleStartConversation = (personaId: string) => {
+    navigate(`/simulator?personaId=${personaId}`);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -124,6 +144,8 @@ const OrgChart = () => {
                 personas={personas}
                 onSave={saveChart}
                 onDelete={() => deleteChart(currentChart.id)}
+                onEditPersona={handleEditPersona}
+                onStartConversation={handleStartConversation}
               />
             ) : (
               <OrgChartList 

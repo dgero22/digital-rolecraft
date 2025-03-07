@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserRound, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const PersonaNode = ({ data, selected }: any) => {
+const MeNode = ({ data, selected }: any) => {
   const initials = data.label
     ? data.label
         .split(' ')
@@ -13,11 +13,11 @@ const PersonaNode = ({ data, selected }: any) => {
         .join('')
         .toUpperCase()
         .substring(0, 2)
-    : '??';
+    : 'ME';
 
   return (
     <div className={`px-4 py-3 rounded-lg shadow-sm border-2 bg-card ${
-      selected ? 'border-primary bg-primary/5' : 'border-muted-foreground/20'
+      selected ? 'border-primary bg-primary/5' : 'border-primary/40'
     }`}>
       <Handle
         type="target"
@@ -27,7 +27,7 @@ const PersonaNode = ({ data, selected }: any) => {
       />
       
       <div className="flex items-center gap-3">
-        <Avatar className="h-10 w-10 border">
+        <Avatar className="h-10 w-10 border bg-primary/20">
           <AvatarImage src={data.avatar} />
           <AvatarFallback className="bg-primary/20 text-primary">
             {initials}
@@ -35,12 +35,9 @@ const PersonaNode = ({ data, selected }: any) => {
         </Avatar>
         
         <div className="min-w-0">
-          <p className="text-sm font-medium truncate">{data.label}</p>
+          <p className="text-sm font-medium truncate">{data.label || 'Me'}</p>
           {data.role && (
             <p className="text-xs text-muted-foreground truncate">{data.role}</p>
-          )}
-          {data.department && (
-            <p className="text-xs text-muted-foreground truncate">{data.department}</p>
           )}
         </div>
         
@@ -50,7 +47,7 @@ const PersonaNode = ({ data, selected }: any) => {
           className="h-8 w-8 ml-auto"
           onClick={(e) => {
             e.stopPropagation();
-            if (data.onEdit && data.personaId) data.onEdit(data.personaId);
+            if (data.onEdit) data.onEdit();
           }}
         >
           <Edit className="h-4 w-4" />
@@ -67,4 +64,4 @@ const PersonaNode = ({ data, selected }: any) => {
   );
 };
 
-export default memo(PersonaNode);
+export default memo(MeNode);

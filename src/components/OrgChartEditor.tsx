@@ -12,6 +12,8 @@ import {
   addEdge,
   Panel,
   MarkerType,
+  Edge,
+  Connection,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -21,13 +23,15 @@ import {
   Save, 
   LayoutGrid, 
   Trash, 
-  ArrowLeftRight,
   UserPlus,
   Settings,
   ZoomIn,
+  UserRound,
 } from "lucide-react";
 import PersonaNode from './orgchart/PersonaNode';
 import DepartmentNode from './orgchart/DepartmentNode';
+import MeNode from './orgchart/MeNode';
+import ConnectionEdge from './orgchart/ConnectionEdge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Select,
@@ -49,15 +53,30 @@ interface OrgChartEditorProps {
   personas: Persona[];
   onSave: (chart: OrgChart) => void;
   onDelete: () => void;
+  onEditPersona: (personaId: string) => void;
+  onStartConversation: (personaId: string) => void;
 }
 
 // Define node types
 const nodeTypes = {
   persona: PersonaNode,
   department: DepartmentNode,
+  me: MeNode,
 };
 
-const OrgChartEditor = ({ orgChart, personas, onSave, onDelete }: OrgChartEditorProps) => {
+// Define edge types
+const edgeTypes = {
+  connection: ConnectionEdge,
+};
+
+const OrgChartEditor = ({ 
+  orgChart, 
+  personas, 
+  onSave, 
+  onDelete,
+  onEditPersona,
+  onStartConversation,
+}: OrgChartEditorProps) => {
   // Chart name state
   const [chartName, setChartName] = useState(orgChart.name);
   
@@ -75,19 +94,33 @@ const OrgChartEditor = ({ orgChart, personas, onSave, onDelete }: OrgChartEditor
   const reactFlowWrapper = useRef(null);
   
   // Handle connections
-  const onConnect = useCallback((params: any) => {
-    const newEdge = {
+  const onConnect = useCallback((params: Connection) => {
+    // Check if one of the nodes is the "me" node
+    const sourceNode = nodes.find(n => n.id === params.source);
+    const targetNode = nodes.find(n => n.id === params.target);
+    const isMeConnection = 
+      (sourceNode && sourceNode.type === 'me') || 
+      (targetNode && targetNode.type === 'me');
+    
+    // Create connection edge
+    const newEdge: OrgChartEdge = {
       ...params,
       id: `e-${nanoid(6)}`,
-      type: 'default',
+      type: isMeConnection ? 'connection' : 'default',
       animated: false,
       label: 'Reports To',
       markerEnd: {
         type: MarkerType.ArrowClosed,
       },
+      data: {
+        onStartConversation: handleStartConversation,
+        onDefineRelationship: handleDefineRelationship,
+        onDeleteConnection: handleDeleteConnection,
+      }
     };
+    
     setEdges((eds) => addEdge(newEdge, eds));
-  }, [setEdges]);
+  }, [nodes, setEdges]);
   
   // Handle node selection
   const onNodeClick = useCallback((event: any, node: OrgChartNode) => {
@@ -118,6 +151,7 @@ const OrgChartEditor = ({ orgChart, personas, onSave, onDelete }: OrgChartEditor
       data: {
         label: 'New Employee',
         role: 'Employee',
+        onEdit: onEditPersona,
       },
     };
     
@@ -144,6 +178,36 @@ const OrgChartEditor = ({ orgChart, personas, onSave, onDelete }: OrgChartEditor
     clearSelection();
   };
   
+  // Add a "Me" node
+  const addMeNode = () => {
+    // Check if a Me node already exists
+    const existingMeNode = nodes.find(node => node.type === 'me');
+    if (existingMeNode) {
+      toast.error('You can only have one "Me" node');
+      return;
+    }
+    
+    const nodeId = `me-${nanoid(6)}`;
+    const newNode: OrgChartNode = {
+      id: nodeId,
+      type: 'me',
+      position: {
+        x: 400 + Math.random() * 200,
+        y: 200 + Math.random() * 100,
+      },
+      data: {
+        label: 'Me',
+        role: 'Your Role',
+        onEdit: () => {
+          toast.info('Editing "Me" functionality coming soon!');
+        },
+      },
+    };
+    
+    setNodes((nds) => [...nds, newNode]);
+    clearSelection();
+  };
+  
   // Update node properties
   const updateSelectedNode = () => {
     if (!selectedNode) return;
@@ -161,6 +225,8 @@ const OrgChartEditor = ({ orgChart, personas, onSave, onDelete }: OrgChartEditor
               label: persona?.name || n.data.label,
               role: selectedNodeRole,
               department: selectedNodeDepartment,
+              onEdit: n.type === 'persona' ? onEditPersona : n.data.onEdit,
+              personaId: selectedNodePersona, // Ensure this is passed to the node
             },
           };
         }
@@ -183,6 +249,70 @@ const OrgChartEditor = ({ orgChart, personas, onSave, onDelete }: OrgChartEditor
     
     clearSelection();
     toast.success('Node deleted');
+  };
+  
+  // Connection context menu handlers
+  const handleStartConversation = (edgeId: string) => {
+    const edge = edges.find(e => e.id === edgeId);
+    if (!edge) return;
+    
+    // Find source and target nodes
+    const sourceNode = nodes.find(n => n.id === edge.source);
+    const targetNode = nodes.find(n => n.id === edge.target);
+    
+    // Determine which node is the persona (not the "me" node)
+    let personaNode;
+    if (sourceNode?.type === 'persona') {
+      personaNode = sourceNode;
+    } else if (targetNode?.type === 'persona') {
+      personaNode = targetNode;
+    }
+    
+    if (personaNode?.personaId) {
+      onStartConversation(personaNode.personaId);
+    } else {
+      toast.error('No persona associated with this connection');
+    }
+  };
+  
+  const handleDefineRelationship = (edgeId: string, relationshipType: string) => {
+    setEdges(eds => 
+      eds.map(edge => {
+        if (edge.id === edgeId) {
+          let label;
+          switch (relationshipType) {
+            case 'reports-to':
+              label = 'Reports To';
+              break;
+            case 'no-report':
+              label = 'No Report';
+              break;
+            case 'future-report':
+              label = 'Future Report';
+              break;
+            default:
+              label = 'Relationship';
+          }
+          
+          return {
+            ...edge,
+            label,
+            data: {
+              ...edge.data,
+              relationshipType,
+            }
+          };
+        }
+        return edge;
+      })
+    );
+    
+    toast.success('Relationship updated');
+  };
+  
+  const handleDeleteConnection = (edgeId: string) => {
+    setEdges(eds => eds.filter(e => e.id !== edgeId));
+    toast.success('Connection deleted');
   };
   
   // Save the chart
@@ -250,6 +380,7 @@ const OrgChartEditor = ({ orgChart, personas, onSave, onDelete }: OrgChartEditor
             onNodeClick={onNodeClick}
             onPaneClick={clearSelection}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             fitView
           >
             <Controls />
@@ -267,6 +398,14 @@ const OrgChartEditor = ({ orgChart, personas, onSave, onDelete }: OrgChartEditor
                   >
                     <UserPlus className="h-3.5 w-3.5 mr-1.5" />
                     Add Person
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="secondary"
+                    onClick={addMeNode}
+                  >
+                    <UserRound className="h-3.5 w-3.5 mr-1.5" />
+                    Add Me
                   </Button>
                   <Button 
                     size="sm" 
@@ -333,6 +472,43 @@ const OrgChartEditor = ({ orgChart, personas, onSave, onDelete }: OrgChartEditor
                         value={selectedNodeDepartment}
                         onChange={(e) => setSelectedNodeDepartment(e.target.value)}
                         placeholder="e.g. Marketing, Engineering"
+                      />
+                    </div>
+                  </>
+                )}
+                
+                {selectedNode.type === 'me' && (
+                  <>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Name</label>
+                      <Input
+                        value={selectedNode.data.label}
+                        onChange={(e) => {
+                          setNodes((nds) =>
+                            nds.map((n) => {
+                              if (n.id === selectedNode.id) {
+                                return {
+                                  ...n,
+                                  data: {
+                                    ...n.data,
+                                    label: e.target.value,
+                                  },
+                                };
+                              }
+                              return n;
+                            })
+                          );
+                        }}
+                        placeholder="Your name"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Role</label>
+                      <Input
+                        value={selectedNodeRole}
+                        onChange={(e) => setSelectedNodeRole(e.target.value)}
+                        placeholder="e.g. CEO, Manager, Developer"
                       />
                     </div>
                   </>
