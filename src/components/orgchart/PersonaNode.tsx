@@ -24,6 +24,11 @@ const PersonaNode = ({ data, selected }: any) => {
         // Prevent default behavior and stop propagation
         e.preventDefault();
         e.stopPropagation();
+        
+        // Trigger node selection callback if provided
+        if (data.onSelect) {
+          data.onSelect(data.id);
+        }
       }}
     >
       <Handle

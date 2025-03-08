@@ -4,10 +4,11 @@ import {
   EdgeProps,
   getBezierPath,
   EdgeLabelRenderer,
+  Edge,
 } from '@xyflow/react';
 import ConnectionContextMenu from './ConnectionContextMenu';
 
-// Define a proper interface for the edge data
+// Define a proper interface for the edge data that extends Edge
 interface ConnectionEdgeData {
   relationshipType?: string;
   label?: string;
@@ -27,7 +28,7 @@ const ConnectionEdge = ({
   style = {},
   markerEnd,
   data,
-}: EdgeProps<ConnectionEdgeData>) => {
+}: EdgeProps) => {
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -37,21 +38,23 @@ const ConnectionEdge = ({
     targetPosition,
   });
 
+  const edgeData = data as ConnectionEdgeData | undefined;
+
   const handleStartConversation = () => {
-    if (data?.onStartConversation) {
-      data.onStartConversation(id);
+    if (edgeData?.onStartConversation) {
+      edgeData.onStartConversation(id);
     }
   };
 
   const handleDefineRelationship = (type: string) => {
-    if (data?.onDefineRelationship) {
-      data.onDefineRelationship(id, type);
+    if (edgeData?.onDefineRelationship) {
+      edgeData.onDefineRelationship(id, type);
     }
   };
 
   const handleDeleteConnection = () => {
-    if (data?.onDeleteConnection) {
-      data.onDeleteConnection(id);
+    if (edgeData?.onDeleteConnection) {
+      edgeData.onDeleteConnection(id);
     }
   };
 
@@ -69,7 +72,7 @@ const ConnectionEdge = ({
           d={edgePath}
           markerEnd={markerEnd}
         />
-        {data?.label && (
+        {edgeData?.label && (
           <EdgeLabelRenderer>
             <div
               style={{
@@ -79,7 +82,7 @@ const ConnectionEdge = ({
               }}
               className="bg-background text-xs px-2 py-1 rounded border shadow-sm nodrag"
             >
-              {data.label}
+              {edgeData.label}
             </div>
           </EdgeLabelRenderer>
         )}

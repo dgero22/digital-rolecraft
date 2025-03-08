@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { nanoid } from 'nanoid';
@@ -57,14 +56,12 @@ interface OrgChartEditorProps {
   onStartConversation: (personaId: string) => void;
 }
 
-// Define node types
 const nodeTypes = {
   persona: PersonaNode,
   department: DepartmentNode,
   me: MeNode,
 };
 
-// Define edge types with the correct typing
 const edgeTypes: EdgeTypes = {
   connection: ConnectionEdge,
 };
@@ -77,32 +74,25 @@ const OrgChartEditor = ({
   onEditPersona,
   onStartConversation,
 }: OrgChartEditorProps) => {
-  // Chart name state
   const [chartName, setChartName] = useState(orgChart.name);
   
-  // Flow chart state
   const [nodes, setNodes, onNodesChange] = useNodesState(orgChart.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(orgChart.edges);
   
-  // Selected node/edge
   const [selectedNode, setSelectedNode] = useState<OrgChartNode | null>(null);
   const [selectedNodePersona, setSelectedNodePersona] = useState<string | undefined>(undefined);
   const [selectedNodeRole, setSelectedNodeRole] = useState<string>('');
   const [selectedNodeDepartment, setSelectedNodeDepartment] = useState<string>('');
   
-  // Flow ref
   const reactFlowWrapper = useRef(null);
   
-  // Handle connections
   const onConnect = useCallback((params: Connection) => {
-    // Check if one of the nodes is the "me" node
     const sourceNode = nodes.find(n => n.id === params.source);
     const targetNode = nodes.find(n => n.id === params.target);
     const isMeConnection = 
       (sourceNode && sourceNode.type === 'me') || 
       (targetNode && targetNode.type === 'me');
     
-    // Create connection edge
     const newEdge: OrgChartEdge = {
       ...params,
       id: `e-${nanoid(6)}`,
@@ -122,7 +112,6 @@ const OrgChartEditor = ({
     setEdges((eds) => addEdge(newEdge, eds));
   }, [nodes, setEdges]);
   
-  // Handle node selection
   const onNodeClick = useCallback((event: any, node: OrgChartNode) => {
     setSelectedNode(node);
     setSelectedNodePersona(node.data.personaId);
@@ -130,7 +119,6 @@ const OrgChartEditor = ({
     setSelectedNodeDepartment(node.data.department || '');
   }, []);
   
-  // Clear selection
   const clearSelection = () => {
     setSelectedNode(null);
     setSelectedNodePersona(undefined);
@@ -138,15 +126,7 @@ const OrgChartEditor = ({
     setSelectedNodeDepartment('');
   };
   
-  // Add a new persona node
   const addPersonaNode = () => {
-    // Check if we have any personas in the library
-    if (personas.length === 0) {
-      toast.error('No personas available in your library. Create personas first.');
-      return;
-    }
-
-    // Create a new node with no persona selected
     const nodeId = `n-${nanoid(6)}`;
     const newNode: OrgChartNode = {
       id: nodeId,
@@ -156,24 +136,19 @@ const OrgChartEditor = ({
         y: 100 + Math.random() * 100,
       },
       data: {
-        label: 'Select a Persona',
+        id: nodeId,
+        label: 'New Persona',
         role: '',
         department: '',
+        personaId: undefined,
         onEdit: onEditPersona,
+        onSelect: onNodeClick,
       },
     };
     
     setNodes((nds) => [...nds, newNode]);
-    setSelectedNode(newNode);
-    setSelectedNodePersona(undefined);
-    setSelectedNodeRole('');
-    setSelectedNodeDepartment('');
-    
-    // Show a toast prompting the user to select a persona
-    toast.info('Please select a persona from the panel on the right');
   };
   
-  // Add a department node
   const addDepartmentNode = () => {
     const nodeId = `d-${nanoid(6)}`;
     const newNode: OrgChartNode = {
@@ -192,9 +167,7 @@ const OrgChartEditor = ({
     clearSelection();
   };
   
-  // Add a "Me" node
   const addMeNode = () => {
-    // Check if a Me node already exists
     const existingMeNode = nodes.find(node => node.type === 'me');
     if (existingMeNode) {
       toast.error('You can only have one "Me" node');
@@ -223,7 +196,6 @@ const OrgChartEditor = ({
     clearSelection();
   };
   
-  // Update node properties
   const updateSelectedNode = () => {
     if (!selectedNode) return;
     
@@ -240,7 +212,9 @@ const OrgChartEditor = ({
               role: selectedNodeRole,
               department: selectedNodeDepartment,
               onEdit: n.type === 'persona' ? onEditPersona : n.data.onEdit,
-              personaId: selectedNodePersona, // Ensure this is passed to the node
+              personaId: selectedNodePersona,
+              avatar: persona?.avatar,
+              onSelect: onNodeClick,
             },
           };
         }
@@ -252,7 +226,6 @@ const OrgChartEditor = ({
     toast.success('Node updated');
   };
   
-  // Delete selected node
   const deleteSelectedNode = () => {
     if (!selectedNode) return;
     
@@ -265,16 +238,13 @@ const OrgChartEditor = ({
     toast.success('Node deleted');
   };
   
-  // Connection context menu handlers
   const handleStartConversation = (edgeId: string) => {
     const edge = edges.find(e => e.id === edgeId);
     if (!edge) return;
     
-    // Find source and target nodes
     const sourceNode = nodes.find(n => n.id === edge.source);
     const targetNode = nodes.find(n => n.id === edge.target);
     
-    // Determine which node is the persona (not the "me" node)
     let personaNode;
     if (sourceNode?.type === 'persona') {
       personaNode = sourceNode;
@@ -282,8 +252,8 @@ const OrgChartEditor = ({
       personaNode = targetNode;
     }
     
-    if (personaNode?.personaId) {
-      onStartConversation(personaNode.personaId);
+    if (personaNode?.data.personaId) {
+      onStartConversation(personaNode.data.personaId);
     } else {
       toast.error('No persona associated with this connection');
     }
@@ -332,7 +302,6 @@ const OrgChartEditor = ({
     toast.success('Connection deleted');
   };
   
-  // Save the chart
   const handleSave = () => {
     const updatedChart: OrgChart = {
       ...orgChart,
