@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { nanoid } from 'nanoid';
@@ -141,7 +142,7 @@ const OrgChartEditor = ({
         department: '',
         personaId: undefined,
         onEdit: onEditPersona,
-        onSelect: onNodeClick,
+        onSelect: onNodeClick, // This matches our updated type definition
       },
     };
     

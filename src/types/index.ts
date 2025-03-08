@@ -74,7 +74,7 @@ export interface OrgChartNode {
     department?: string;
     onEdit?: (personaId?: string) => void;
     personaId?: string;
-    onSelect?: (nodeId: string) => void;
+    onSelect?: (event: any, node: OrgChartNode) => void; // Updated signature to match implementation
     avatar?: string;
   };
 }
