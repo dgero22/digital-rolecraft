@@ -74,6 +74,8 @@ export interface OrgChartNode {
     department?: string;
     onEdit?: (personaId?: string) => void;
     personaId?: string;
+    onSelect?: (nodeId: string) => void;
+    avatar?: string;
   };
 }
 
