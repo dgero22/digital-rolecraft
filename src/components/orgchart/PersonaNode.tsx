@@ -2,10 +2,10 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserRound, Edit } from "lucide-react";
+import { Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const PersonaNode = ({ data, selected, id }: any) => {
+const PersonaNode = ({ data, selected }: any) => {
   const initials = data.label
     ? data.label
         .split(' ')
@@ -20,17 +20,6 @@ const PersonaNode = ({ data, selected, id }: any) => {
       className={`px-4 py-3 rounded-lg shadow-sm border-2 bg-card ${
         selected ? 'border-primary bg-primary/5' : 'border-muted-foreground/20'
       }`}
-      onDoubleClick={(e) => {
-        // Prevent default behavior and stop propagation
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Trigger node selection callback if provided
-        if (data.onSelect) {
-          // Pass the correct event and node object structure to match the expected signature
-          data.onSelect(e, { id, data, type: 'persona', position: { x: 0, y: 0 } });
-        }
-      }}
     >
       <Handle
         type="target"
