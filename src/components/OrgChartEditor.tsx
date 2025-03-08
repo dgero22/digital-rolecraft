@@ -136,7 +136,6 @@ const OrgChartEditor = ({
         y: 100 + Math.random() * 100,
       },
       data: {
-        id: nodeId,
         label: 'New Persona',
         role: '',
         department: '',
