@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserRound, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const PersonaNode = ({ data, selected }: any) => {
+const PersonaNode = ({ data, selected, id }: any) => {
   const initials = data.label
     ? data.label
         .split(' ')
@@ -27,7 +27,8 @@ const PersonaNode = ({ data, selected }: any) => {
         
         // Trigger node selection callback if provided
         if (data.onSelect) {
-          data.onSelect(data.id);
+          // Pass the correct event and node object structure to match the expected signature
+          data.onSelect(e, { id, data, type: 'persona', position: { x: 0, y: 0 } });
         }
       }}
     >
