@@ -140,6 +140,13 @@ const OrgChartEditor = ({
   
   // Add a new persona node
   const addPersonaNode = () => {
+    // Check if we have any personas in the library
+    if (personas.length === 0) {
+      toast.error('No personas available in your library. Create personas first.');
+      return;
+    }
+
+    // Create a new node with no persona selected
     const nodeId = `n-${nanoid(6)}`;
     const newNode: OrgChartNode = {
       id: nodeId,
@@ -149,15 +156,21 @@ const OrgChartEditor = ({
         y: 100 + Math.random() * 100,
       },
       data: {
-        label: 'New Employee',
-        role: 'Employee',
+        label: 'Select a Persona',
+        role: '',
         department: '',
         onEdit: onEditPersona,
       },
     };
     
     setNodes((nds) => [...nds, newNode]);
-    clearSelection();
+    setSelectedNode(newNode);
+    setSelectedNodePersona(undefined);
+    setSelectedNodeRole('');
+    setSelectedNodeDepartment('');
+    
+    // Show a toast prompting the user to select a persona
+    toast.info('Please select a persona from the panel on the right');
   };
   
   // Add a department node
@@ -221,7 +234,6 @@ const OrgChartEditor = ({
           
           return {
             ...n,
-            personaId: selectedNodePersona,
             data: {
               ...n.data,
               label: persona?.name || n.data.label,
@@ -402,7 +414,7 @@ const OrgChartEditor = ({
                     onClick={addPersonaNode}
                   >
                     <UserPlus className="h-3.5 w-3.5 mr-1.5" />
-                    Add Person
+                    Add Persona
                   </Button>
                   <Button 
                     size="sm" 

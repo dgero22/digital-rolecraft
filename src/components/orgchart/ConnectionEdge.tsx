@@ -9,12 +9,7 @@ import ConnectionContextMenu from './ConnectionContextMenu';
 import { OrgChartEdge } from '@/types';
 
 // Define the props type for the edge component
-type ConnectionEdgeProps = EdgeProps<{
-  label?: string;
-  onStartConversation?: (id: string) => void;
-  onDefineRelationship?: (id: string, type: string) => void;
-  onDeleteConnection?: (id: string) => void;
-}>;
+type ConnectionEdgeProps = EdgeProps<OrgChartEdge['data']>;
 
 const ConnectionEdge = ({
   id,
