@@ -6,13 +6,15 @@ import {
   EdgeLabelRenderer,
 } from '@xyflow/react';
 import ConnectionContextMenu from './ConnectionContextMenu';
+import { OrgChartEdge } from '@/types';
 
-interface ConnectionEdgeData {
+// Define the props type for the edge component
+type ConnectionEdgeProps = EdgeProps<{
   label?: string;
   onStartConversation?: (id: string) => void;
   onDefineRelationship?: (id: string, type: string) => void;
   onDeleteConnection?: (id: string) => void;
-}
+}>;
 
 const ConnectionEdge = ({
   id,
@@ -25,7 +27,7 @@ const ConnectionEdge = ({
   style = {},
   markerEnd,
   data,
-}: EdgeProps<ConnectionEdgeData>) => {
+}: ConnectionEdgeProps) => {
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -36,19 +38,19 @@ const ConnectionEdge = ({
   });
 
   const handleStartConversation = () => {
-    if (data?.onStartConversation) {
+    if (data && data.onStartConversation) {
       data.onStartConversation(id);
     }
   };
 
   const handleDefineRelationship = (type: string) => {
-    if (data?.onDefineRelationship) {
+    if (data && data.onDefineRelationship) {
       data.onDefineRelationship(id, type);
     }
   };
 
   const handleDeleteConnection = () => {
-    if (data?.onDeleteConnection) {
+    if (data && data.onDeleteConnection) {
       data.onDeleteConnection(id);
     }
   };
@@ -67,7 +69,7 @@ const ConnectionEdge = ({
           d={edgePath}
           markerEnd={markerEnd}
         />
-        {data?.label && (
+        {data && data.label && (
           <EdgeLabelRenderer>
             <div
               style={{

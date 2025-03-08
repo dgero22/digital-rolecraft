@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { nanoid } from 'nanoid';
@@ -14,6 +13,7 @@ import {
   MarkerType,
   Edge,
   Connection,
+  EdgeTypes,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -64,8 +64,8 @@ const nodeTypes = {
   me: MeNode,
 };
 
-// Define edge types
-const edgeTypes = {
+// Define edge types - fixed typing
+const edgeTypes: EdgeTypes = {
   connection: ConnectionEdge,
 };
 
