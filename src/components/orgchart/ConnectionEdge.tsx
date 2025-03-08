@@ -7,6 +7,13 @@ import {
 } from '@xyflow/react';
 import ConnectionContextMenu from './ConnectionContextMenu';
 
+interface ConnectionEdgeData {
+  label?: string;
+  onStartConversation?: (id: string) => void;
+  onDefineRelationship?: (id: string, type: string) => void;
+  onDeleteConnection?: (id: string) => void;
+}
+
 const ConnectionEdge = ({
   id,
   sourceX,
@@ -18,7 +25,7 @@ const ConnectionEdge = ({
   style = {},
   markerEnd,
   data,
-}: EdgeProps) => {
+}: EdgeProps<ConnectionEdgeData>) => {
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -70,7 +77,7 @@ const ConnectionEdge = ({
               }}
               className="bg-background text-xs px-2 py-1 rounded border shadow-sm nodrag"
             >
-              {data.label as string}
+              {data.label}
             </div>
           </EdgeLabelRenderer>
         )}

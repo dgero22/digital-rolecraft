@@ -16,9 +16,16 @@ const PersonaNode = ({ data, selected }: any) => {
     : '??';
 
   return (
-    <div className={`px-4 py-3 rounded-lg shadow-sm border-2 bg-card ${
-      selected ? 'border-primary bg-primary/5' : 'border-muted-foreground/20'
-    }`}>
+    <div 
+      className={`px-4 py-3 rounded-lg shadow-sm border-2 bg-card ${
+        selected ? 'border-primary bg-primary/5' : 'border-muted-foreground/20'
+      }`}
+      onDoubleClick={(e) => {
+        // Prevent default behavior and stop propagation
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
       <Handle
         type="target"
         position={Position.Top}
