@@ -212,7 +212,6 @@ const OrgChartEditor = ({
               onEdit: n.type === 'persona' ? onEditPersona : n.data.onEdit,
               personaId: selectedNodePersona,
               avatar: persona?.avatar,
-              onSelect: onNodeClick,
             },
           };
         }
@@ -431,7 +430,7 @@ const OrgChartEditor = ({
                           <SelectValue placeholder="Select a persona" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">No persona</SelectItem>
+                          <SelectItem value="none">No persona</SelectItem>
                           {personas.map((persona) => (
                             <SelectItem key={persona.id} value={persona.id}>
                               {persona.name}
