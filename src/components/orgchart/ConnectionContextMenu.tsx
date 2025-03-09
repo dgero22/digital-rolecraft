@@ -3,7 +3,10 @@ import {
   MessageCircle, 
   Link, 
   Unlink,
-  ChevronRight
+  ChevronRight, 
+  ArrowUpRight,
+  ArrowDown,
+  CircleDashed
 } from "lucide-react";
 import {
   ContextMenu,
@@ -45,15 +48,15 @@ const ConnectionContextMenu = ({
           </ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-48">
             <ContextMenuItem onClick={() => onDefineRelationship('reports-to')}>
-              <ChevronRight className="h-4 w-4 mr-2" />
+              <ArrowDown className="h-4 w-4 mr-2 text-green-500" />
               Reports to
             </ContextMenuItem>
             <ContextMenuItem onClick={() => onDefineRelationship('no-report')}>
-              <ChevronRight className="h-4 w-4 mr-2" />
+              <CircleDashed className="h-4 w-4 mr-2 text-gray-500" />
               No report
             </ContextMenuItem>
             <ContextMenuItem onClick={() => onDefineRelationship('future-report')}>
-              <ChevronRight className="h-4 w-4 mr-2" />
+              <ArrowUpRight className="h-4 w-4 mr-2 text-blue-500" />
               Future report
             </ContextMenuItem>
           </ContextMenuSubContent>

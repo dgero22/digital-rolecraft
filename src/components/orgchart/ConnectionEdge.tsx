@@ -28,6 +28,8 @@ const ConnectionEdge = ({
   style = {},
   markerEnd,
   data,
+  animated,
+  label,
 }: EdgeProps) => {
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
@@ -39,6 +41,7 @@ const ConnectionEdge = ({
   });
 
   const edgeData = data as ConnectionEdgeData | undefined;
+  const edgeLabel = edgeData?.label || label;
 
   const handleStartConversation = () => {
     if (edgeData?.onStartConversation) {
@@ -58,6 +61,36 @@ const ConnectionEdge = ({
     }
   };
 
+  // Determine styling based on relationship type
+  const getEdgeStyle = () => {
+    const baseStyle = { ...style };
+    const relationshipType = edgeData?.relationshipType;
+    
+    if (relationshipType === 'reports-to') {
+      return { 
+        ...baseStyle, 
+        strokeWidth: 2,
+        stroke: '#10b981' // Green for "Reports To"
+      };
+    } else if (relationshipType === 'no-report') {
+      return { 
+        ...baseStyle, 
+        strokeWidth: 1.5,
+        strokeDasharray: '5,5',
+        stroke: '#6b7280' // Gray for "No Report"
+      };
+    } else if (relationshipType === 'future-report') {
+      return { 
+        ...baseStyle, 
+        strokeWidth: 1.5,
+        strokeDasharray: '8,4',
+        stroke: '#3b82f6' // Blue for "Future Report"
+      };
+    }
+    
+    return baseStyle;
+  };
+
   return (
     <ConnectionContextMenu
       onStartConversation={handleStartConversation}
@@ -67,12 +100,12 @@ const ConnectionEdge = ({
       <g>
         <path
           id={id}
-          style={style}
+          style={getEdgeStyle()}
           className="react-flow__edge-path"
           d={edgePath}
           markerEnd={markerEnd}
         />
-        {edgeData?.label && (
+        {edgeLabel && (
           <EdgeLabelRenderer>
             <div
               style={{
@@ -82,7 +115,7 @@ const ConnectionEdge = ({
               }}
               className="bg-background text-xs px-2 py-1 rounded border shadow-sm nodrag"
             >
-              {edgeData.label}
+              {edgeLabel}
             </div>
           </EdgeLabelRenderer>
         )}
