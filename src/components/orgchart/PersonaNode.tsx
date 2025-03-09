@@ -52,22 +52,9 @@ const PersonaNode = ({ data, selected }: any) => {
           className="h-8 w-8 ml-auto"
           onClick={(e) => {
             e.stopPropagation();
-            // Pass personaId to the onEdit function if it exists
+            // Simple edit functionality without personaId checking
             if (data.onEdit) {
-              if (data.personaId) {
-                data.onEdit(data.personaId);
-              } else {
-                // Show a message that this node needs to be linked to a persona first
-                console.log("No persona associated with this node");
-                // We could also use toast here to show an error message
-                const toast = document.querySelector('[role="status"]');
-                if (toast) {
-                  const event = new CustomEvent('toast', { 
-                    detail: { message: 'Please select a persona for this node first', type: 'error' } 
-                  });
-                  document.dispatchEvent(event);
-                }
-              }
+              data.onEdit(data.personaId);
             }
           }}
         >
