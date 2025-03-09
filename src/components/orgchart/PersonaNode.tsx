@@ -15,17 +15,11 @@ const PersonaNode = ({ data, selected }: any) => {
         .substring(0, 2)
     : '??';
 
-  // Add a callback to prevent the node from being selectable by click
-  const preventSelection = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
-
   return (
     <div 
       className={`px-4 py-3 rounded-lg shadow-sm border-2 bg-card ${
         selected ? 'border-primary bg-primary/5' : 'border-muted-foreground/20'
       }`}
-      onClick={preventSelection}
     >
       <Handle
         type="target"
